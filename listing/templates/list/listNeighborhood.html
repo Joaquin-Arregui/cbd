@@ -6,7 +6,7 @@
 {% block contenido %}
 	    <dl>
 		{% for row in neighborhood %}
-		    <h4>{{row.name}}</h4>
+        <a href="/neighborhood/{{row.neighborhood_id}}"><h4>{{row.name}}</h4></a>
 		{% endfor %}
 		</dl>
         <ul class="uk-pagination uk-flex-center" uk-margin>

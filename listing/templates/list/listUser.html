@@ -6,7 +6,7 @@
 {% block contenido %}
 	    <dl>
 		{% for row in user %}
-		    <h4>{{row.name}}</h4>
+        <a href="/user/{{row.user_id}}"><h4>{{row.name}}</h4></a>
 		{% endfor %}
 		</dl>
         <ul class="uk-pagination uk-flex-center" uk-margin>

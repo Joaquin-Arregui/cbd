@@ -27,4 +27,9 @@ urlpatterns = [
     path('users/<int:pag>/', views.listUser, name='index'),
     path('reviews/<int:pag>/', views.listReview, name='index'),
     path('listing/<int:id>/', views.getListing, name='index'),
+    path('host/<int:id>/', views.getHost, name='index'),
+    path('neighborhood/<int:id>/', views.getNeighborhood, name='index'),
+    path('amenity/<str:id>/', views.getAmenity, name='index'),
+    path('user/<int:id>/', views.getUser, name='index'),
+    path('review/<int:id>/', views.getReview, name='index'),
 ]

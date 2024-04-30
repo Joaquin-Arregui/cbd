@@ -183,7 +183,7 @@ def getListing(request, id):
 
 def getHost(request, id):
     host = Host.nodes.get(host_id = id)
-    listing = host.listing.all()
+    listing = host.listings.all()
     
     return render(request, 'details/detailsHost.html', {
         'host': host,
@@ -193,7 +193,7 @@ def getHost(request, id):
 
 def getNeighborhood(request, id):
     neighborhood = Neighborhood.nodes.get(neighborhood_id = id)
-    listing = neighborhood.listing.all()
+    listing = neighborhood.listings.all()
     
     return render(request, 'details/detailsNeighborhood.html', {
         'neighborhood': neighborhood,
@@ -202,8 +202,8 @@ def getNeighborhood(request, id):
     })
 
 def getAmenity(request, id):
-    amenities = Amenity.nodes.get(amenity_id = id)
-    listing = amenities.listing.all()
+    amenities = Amenity.nodes.get(name = id)
+    listing = amenities.listings.all()
     
     return render(request, 'details/detailsAmenity.html', {
         'amenities': amenities,
@@ -213,17 +213,17 @@ def getAmenity(request, id):
 
 def getUser(request, id):
     user = User.nodes.get(user_id = id)
-    listing = user.listing.all()
+    review = user.reviews.all()
    
     return render(request, 'details/detailsUser.html', {
         'user': user,
-        'listing': listing,
+        'review': review,
         'STATIC_URL':settings.STATIC_URL
     })
 
 def getReview(request, id):
     reviews = Review.nodes.get(review_id = id)
-    listing = reviews.listing.all()
+    listing = reviews.listings.all()
     user = reviews.user.all()
 
     return render(request, 'details/detailsReview.html', {
