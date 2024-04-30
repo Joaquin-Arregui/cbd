@@ -425,22 +425,24 @@ def create_review(request, listing_id):
         RETURN MAX(r.review_id)
         """
         results, _ = db.cypher_query(query, {'id': str(id)})
+        date = datetime.now().strftime('%Y-%m-%d')
         review_id = int(results[0][0])+1
         query = """
-        MATCH (user:User {user_id: '$user_id'})
-        MATCH (listing:Listing {listing_id: '$listing_id'})
+        MATCH (user:User {user_id: $user_id})
+        MATCH (listing:Listing {listing_id: $listing_id})
         CREATE (review:Review {
-        review_id: '$review_id',
-        date: '$date',
-        comments: '$comment'
+        review_id: $review_id,
+        date: $date,
+        comments: $comment
         })
         CREATE (user)-[:WROTE]->(review)
         CREATE (review)-[:REVIEWS]->(listing)
         RETURN review
         """
-        results, _ = db.cypher_query(query, {'listing_id': str(listing_id), 'user_id': user_id, 'review_id': review_id, 'date':datetime.now().strftime('%Y-%m-%d'), 'comment': review_text})
+        results, _ = db.cypher_query(query, {'listing_id': str(listing_id), 'user_id': str(user_id), 'review_id': str(review_id), 'date':date, 'comment': review_text})
         review = results[0][0]
-        return redirect('/review/'+ str(review.review_id))
+        review = Review.inflate(review)
+        return redirect('/listing/'+ str(review.review_id))
     
     query = """
     MATCH (a:User)
