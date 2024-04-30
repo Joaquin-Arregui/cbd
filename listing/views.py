@@ -52,133 +52,178 @@ def listListing(request, pag):
 
 
 def listHost(request, pag):
-    NUM_PEL = len(Host.nodes.all())
     TAM_PAG = 10
-    NUM_PAG = int(NUM_PEL/TAM_PAG)
-    if pag > NUM_PAG:
-        pag = NUM_PAG
-    else:
-        if pag < 1:
-            pag = 1
-    if pag - 3 < 1:
-        paginas = range(1,pag + 4)
-    elif pag+3 > NUM_PAG:
-        paginas = range(pag - 3, NUM_PAG+1)
-    else:
-        paginas = range(pag - 3,pag + 4)
+
+    count_query = "MATCH (n:Host) RETURN count(n)"
+    count_results, _ = db.cypher_query(count_query)
+    NUM_PEL = count_results[0][0] if count_results else 0
+    NUM_PAG = (NUM_PEL + TAM_PAG - 1) // TAM_PAG  
+
+    pag = max(1, min(pag, NUM_PAG))
     
-    host = Host.nodes.all()[(pag-1)*TAM_PAG:pag*TAM_PAG]
+    start_page = max(1, pag - 3)
+    end_page = min(NUM_PAG, pag + 3)
+    paginas = range(start_page, end_page + 1)
+
+    offset = (pag - 1) * TAM_PAG
+    
+    query = """
+    MATCH (n:Host)
+    RETURN n
+    SKIP $offset
+    LIMIT $limit
+    """
+    params = {'offset': offset, 'limit': TAM_PAG}
+    host_results, _ = db.cypher_query(query, params)
+    hosts = [Host.inflate(row[0]) for row in host_results]
+
     return render(request, 'list/listHost.html', {
         'total': NUM_PEL,
-        'host': host,
-        'pagina':pag,
+        'host': hosts,
+        'pagina': pag,
         'paginas': paginas,
         'total_paginas': NUM_PAG,
-        'STATIC_URL':settings.STATIC_URL
+        'STATIC_URL': settings.STATIC_URL
     })
 
 def listNeighborhood(request, pag):
-    NUM_PEL = len(Neighborhood.nodes.all())
     TAM_PAG = 10
-    NUM_PAG = int(NUM_PEL/TAM_PAG)
-    if pag > NUM_PAG:
-        pag = NUM_PAG
-    else:
-        if pag < 1:
-            pag = 1
-    if pag - 3 < 1:
-        paginas = range(1,pag + 4)
-    elif pag+3 > NUM_PAG:
-        paginas = range(pag - 3, NUM_PAG+1)
-    else:
-        paginas = range(pag - 3,pag + 4)
+
+    count_query = "MATCH (n:Neighborhood) RETURN count(n)"
+    count_results, _ = db.cypher_query(count_query)
+    NUM_PEL = count_results[0][0] if count_results else 0
+    NUM_PAG = (NUM_PEL + TAM_PAG - 1) // TAM_PAG  
+
+    pag = max(1, min(pag, NUM_PAG))
     
-    neighborhood = Neighborhood.nodes.all()[(pag-1)*TAM_PAG:pag*TAM_PAG]
+    start_page = max(1, pag - 3)
+    end_page = min(NUM_PAG, pag + 3)
+    paginas = range(start_page, end_page + 1)
+
+    offset = (pag - 1) * TAM_PAG
+    
+    query = """
+    MATCH (n:Neighborhood)
+    RETURN n
+    SKIP $offset
+    LIMIT $limit
+    """
+    params = {'offset': offset, 'limit': TAM_PAG}
+    neighborhood_results, _ = db.cypher_query(query, params)
+    neighborhoods = [Neighborhood.inflate(row[0]) for row in neighborhood_results]
+
     return render(request, 'list/listNeighborhood.html', {
         'total': NUM_PEL,
-        'neighborhood': neighborhood,
-        'pagina':pag,
+        'neighborhood': neighborhoods,
+        'pagina': pag,
         'paginas': paginas,
         'total_paginas': NUM_PAG,
-        'STATIC_URL':settings.STATIC_URL
+        'STATIC_URL': settings.STATIC_URL
     })
 
 def listAmenity(request, pag):
-    NUM_PEL = len(Amenity.nodes.all())
     TAM_PAG = 10
-    NUM_PAG = int(NUM_PEL/TAM_PAG)
-    if pag > NUM_PAG:
-        pag = NUM_PAG
-    else:
-        if pag < 1:
-            pag = 1
-    if pag - 3 < 1:
-        paginas = range(1,pag + 4)
-    elif pag+3 > NUM_PAG:
-        paginas = range(pag - 3, NUM_PAG+1)
-    else:
-        paginas = range(pag - 3,pag + 4)
+
+    count_query = "MATCH (a:Amenity) RETURN count(a)"
+    count_results, _ = db.cypher_query(count_query)
+    NUM_PEL = count_results[0][0] if count_results else 0
+    NUM_PAG = (NUM_PEL + TAM_PAG - 1) // TAM_PAG  
+
+    pag = max(1, min(pag, NUM_PAG))
     
-    amenity = Amenity.nodes.all()[(pag-1)*TAM_PAG:pag*TAM_PAG]
+    start_page = max(1, pag - 3)
+    end_page = min(NUM_PAG, pag + 3)
+    paginas = range(start_page, end_page + 1)
+
+    offset = (pag - 1) * TAM_PAG
+    
+    query = """
+    MATCH (a:Amenity)
+    RETURN a
+    SKIP $offset
+    LIMIT $limit
+    """
+    params = {'offset': offset, 'limit': TAM_PAG}
+    amenity_results, _ = db.cypher_query(query, params)
+    amenities = [Amenity.inflate(row[0]) for row in amenity_results]
+
     return render(request, 'list/listAmenity.html', {
         'total': NUM_PEL,
-        'amenity': amenity,
-        'pagina':pag,
+        'amenity': amenities,
+        'pagina': pag,
         'paginas': paginas,
         'total_paginas': NUM_PAG,
-        'STATIC_URL':settings.STATIC_URL
+        'STATIC_URL': settings.STATIC_URL
     })
 
 def listUser(request, pag):
-    NUM_PEL = len(User.nodes.all())
     TAM_PAG = 10
-    NUM_PAG = int(NUM_PEL/TAM_PAG)
-    if pag > NUM_PAG:
-        pag = NUM_PAG
-    else:
-        if pag < 1:
-            pag = 1
-    if pag - 3 < 1:
-        paginas = range(1,pag + 4)
-    elif pag+3 > NUM_PAG:
-        paginas = range(pag - 3, NUM_PAG+1)
-    else:
-        paginas = range(pag - 3,pag + 4)
-    
-    user = User.nodes.all()[(pag-1)*TAM_PAG:pag*TAM_PAG]
+
+    count_query = "MATCH (u:User) RETURN count(u)"
+    count_results, _ = db.cypher_query(count_query)
+    NUM_PEL = count_results[0][0] if count_results else 0
+    NUM_PAG = (NUM_PEL + TAM_PAG - 1) // TAM_PAG  
+
+    pag = max(1, min(pag, NUM_PAG))
+
+    start_page = max(1, pag - 3)
+    end_page = min(NUM_PAG, pag + 3)
+    paginas = range(start_page, end_page + 1)
+
+    offset = (pag - 1) * TAM_PAG
+
+    query = """
+    MATCH (u:User)
+    RETURN u
+    SKIP $offset
+    LIMIT $limit
+    """
+    params = {'offset': offset, 'limit': TAM_PAG}
+    user_results, _ = db.cypher_query(query, params)
+    users = [User.inflate(row[0]) for row in user_results]
+
     return render(request, 'list/listUser.html', {
         'total': NUM_PEL,
-        'user': user,
-        'pagina':pag,
+        'user': users,
+        'pagina': pag,
         'paginas': paginas,
         'total_paginas': NUM_PAG,
-        'STATIC_URL':settings.STATIC_URL
+        'STATIC_URL': settings.STATIC_URL
     })
 
 def listReview(request, pag):
-    NUM_PEL = len(Review.nodes.all())
     TAM_PAG = 10
-    NUM_PAG = int(NUM_PEL/TAM_PAG)
-    if pag > NUM_PAG:
-        pag = NUM_PAG
-    else:
-        if pag < 1:
-            pag = 1
-    if pag - 3 < 1:
-        paginas = range(1,pag + 4)
-    elif pag+3 > NUM_PAG:
-        paginas = range(pag - 3, NUM_PAG+1)
-    else:
-        paginas = range(pag - 3,pag + 4)
-    
-    review = Review.nodes.all()[(pag-1)*TAM_PAG:pag*TAM_PAG]
+
+    count_query = "MATCH (r:Review) RETURN count(r)"
+    count_results, _ = db.cypher_query(count_query)
+    NUM_PEL = count_results[0][0] if count_results else 0
+    NUM_PAG = (NUM_PEL + TAM_PAG - 1) // TAM_PAG  
+
+    pag = max(1, min(pag, NUM_PAG))
+
+    start_page = max(1, pag - 3)
+    end_page = min(NUM_PAG, pag + 3)
+    paginas = range(start_page, end_page + 1)
+
+    offset = (pag - 1) * TAM_PAG
+
+    query = """
+    MATCH (r:Review)
+    RETURN r
+    SKIP $offset
+    LIMIT $limit
+    """
+    params = {'offset': offset, 'limit': TAM_PAG}
+    review_results, _ = db.cypher_query(query, params)
+    reviews = [Review.inflate(row[0]) for row in review_results]
+
     return render(request, 'list/listReview.html', {
         'total': NUM_PEL,
-        'review': review,
-        'pagina':pag,
+        'review': reviews,
+        'pagina': pag,
         'paginas': paginas,
         'total_paginas': NUM_PAG,
-        'STATIC_URL':settings.STATIC_URL
+        'STATIC_URL': settings.STATIC_URL
     })
 
 def getListing(request, id):
