@@ -1,0 +1,16 @@
+    {% extends 'base.html' %}
+
+    {% block titulo %} {{ amenity.name }} {% endblock %}
+
+    {% block contenido %}
+
+    <h3>Alojamientos</h3>
+    <dl>
+		{% for row in listing %}
+		    <a href="/listing/{{row.listing_id}}"><h4>{{row.name}}:</h4></a>
+            <p>Precio: {{row.price}}$, Número de habitaciones: {{row.bedrooms}}, Número de aseos: {{row.bathrooms}}</p>
+		{% endfor %}
+		</dl>
+    <hr>
+
+    {% endblock %}

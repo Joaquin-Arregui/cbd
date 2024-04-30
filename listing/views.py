@@ -180,3 +180,55 @@ def getListing(request, id):
         'listing': listing,
         'STATIC_URL':settings.STATIC_URL
     })
+
+def getHost(request, id):
+    host = Host.nodes.get(host_id = id)
+    listing = host.listing.all()
+    
+    return render(request, 'details/detailsHost.html', {
+        'host': host,
+        'listing': listing,
+        'STATIC_URL':settings.STATIC_URL
+    })
+
+def getNeighborhood(request, id):
+    neighborhood = Neighborhood.nodes.get(neighborhood_id = id)
+    listing = neighborhood.listing.all()
+    
+    return render(request, 'details/detailsNeighborhood.html', {
+        'neighborhood': neighborhood,
+        'listing': listing,
+        'STATIC_URL':settings.STATIC_URL
+    })
+
+def getAmenity(request, id):
+    amenities = Amenity.nodes.get(amenity_id = id)
+    listing = amenities.listing.all()
+    
+    return render(request, 'details/detailsAmenity.html', {
+        'amenities': amenities,
+        'listing': listing,
+        'STATIC_URL':settings.STATIC_URL
+    })
+
+def getUser(request, id):
+    user = User.nodes.get(user_id = id)
+    listing = user.listing.all()
+   
+    return render(request, 'details/detailsUser.html', {
+        'user': user,
+        'listing': listing,
+        'STATIC_URL':settings.STATIC_URL
+    })
+
+def getReview(request, id):
+    reviews = Review.nodes.get(review_id = id)
+    listing = reviews.listing.all()
+    user = reviews.user.all()
+
+    return render(request, 'details/detailsReview.html', {
+        'user': user,
+        'review': reviews,
+        'listing': listing,
+        'STATIC_URL':settings.STATIC_URL
+    })
