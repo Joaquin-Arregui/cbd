@@ -14,24 +14,19 @@ def index(request):
 def listListing(request, pag):
     TAM_PAG = 10
     
-    # Realiza una consulta para contar el total de Listings
     count_query = "MATCH (n:Listing) RETURN count(n)"
     count_results, _ = db.cypher_query(count_query)
     NUM_PEL = count_results[0][0] if count_results else 0
-    NUM_PAG = (NUM_PEL + TAM_PAG - 1) // TAM_PAG  # Calcula el número total de páginas
+    NUM_PAG = (NUM_PEL + TAM_PAG - 1) // TAM_PAG  
 
-    # Asegúrate de que la página solicitada esté dentro de los límites
     pag = max(1, min(pag, NUM_PAG))
     
-    # Calcula el rango de páginas para la paginación
     start_page = max(1, pag - 3)
     end_page = min(NUM_PAG, pag + 3)
     paginas = range(start_page, end_page + 1)
 
-    # Calcula el offset para la consulta
     offset = (pag - 1) * TAM_PAG
     
-    # Realiza una consulta para obtener los Listings de la página actual
     query = """
     MATCH (n:Listing)
     RETURN n
@@ -227,74 +222,164 @@ def listReview(request, pag):
     })
 
 def getListing(request, id):
-    listing = Listing.nodes.get(listing_id = id)
-    reviews = listing.reviews.all()
-    host = listing.host.all()
-    amenities = listing.amenities.all()
-    neighborhood = listing.neighborhood.all()[0]
-    return render(request, 'details/detailsListing.html', {
-        'neighborhood': neighborhood,
-        'amenities': amenities,
-        'host': host,
-        'review': reviews,
-        'listing': listing,
-        'STATIC_URL':settings.STATIC_URL
-    })
+    query = """
+    MATCH (l:Listing)
+    WHERE l.listing_id = $id
+    RETURN l
+    """
+    results, _ = db.cypher_query(query, {'id': str(id)})
+    
+    if results:
+        listing = results[0][0]
+        listing = Listing.inflate(listing)
+        reviews = listing.reviews.all()
+        host = listing.host.all()
+        amenities = listing.amenities.all()
+        neighborhood = listing.neighborhood.all()
+
+        return render(request, 'details/detailsListing.html', {
+            'neighborhood': neighborhood,
+            'amenities': amenities,
+            'host': host,
+            'review': reviews,
+            'listing': listing,
+            'STATIC_URL': settings.STATIC_URL
+        })
+    else:
+        return render(request, 'details/detailsListing.html', {
+            'error': 'No listing found with the provided ID.',
+            'STATIC_URL': settings.STATIC_URL
+        })
 
 def getHost(request, id):
-    host = Host.nodes.get(host_id = id)
-    listing = host.listings.all()
+    query = """
+    MATCH (h:Host)
+    WHERE h.host_id = $id
+    OPTIONAL MATCH (h)-[:HAS_LISTINGS]->(l)
+    RETURN h, collect(l) as listings
+    """
+    results, _ = db.cypher_query(query, {'id': str(id)})
     
-    return render(request, 'details/detailsHost.html', {
-        'host': host,
-        'listing': listing,
-        'STATIC_URL':settings.STATIC_URL
-    })
+    if results and results[0][0]:
+        host, listings = results[0]
+        host = Host.inflate(host)
+        listings = [Listing.inflate(l) for l in listings] if listings else []
+
+        return render(request, 'details/detailsHost.html', {
+            'host': host,
+            'listing': listings,
+            'STATIC_URL': settings.STATIC_URL
+        })
+    else:
+        return render(request, 'details/detailsHost.html', {
+            'error': 'No host found with the provided ID.',
+            'STATIC_URL': settings.STATIC_URL
+        })
+
 
 def getNeighborhood(request, id):
-    neighborhood = Neighborhood.nodes.get(neighborhood_id = id)
-    listing = neighborhood.listings.all()
+    query = """
+    MATCH (n:Neighborhood)
+    WHERE n.neighborhood_id = $id
+    OPTIONAL MATCH (n)-[:HAS_LISTINGS]->(l)
+    RETURN n, collect(l) as listings
+    """
+    results, _ = db.cypher_query(query, {'id': str(id)})
     
-    return render(request, 'details/detailsNeighborhood.html', {
-        'neighborhood': neighborhood,
-        'listing': listing,
-        'STATIC_URL':settings.STATIC_URL
-    })
+    if results and results[0][0]:
+        neighborhood, listings = results[0]
+        neighborhood = Neighborhood.inflate(neighborhood)
+        listings = [Listing.inflate(l) for l in listings] if listings else []
+
+        return render(request, 'details/detailsNeighborhood.html', {
+            'neighborhood': neighborhood,
+            'listing': listings,
+            'STATIC_URL': settings.STATIC_URL
+        })
+    else:
+        return render(request, 'details/detailsNeighborhood.html', {
+            'error': 'No neighborhood found with the provided ID.',
+            'STATIC_URL': settings.STATIC_URL
+        })
+
 
 def getAmenity(request, id):
-    amenities = Amenity.nodes.get(name = id)
-    listing = amenities.listings.all()
+    query = """
+    MATCH (a:Amenity)
+    WHERE a.name = $id
+    OPTIONAL MATCH (a)-[:HAS_LISTINGS]->(l)
+    RETURN a, collect(l) as listings
+    """
+    results, _ = db.cypher_query(query, {'id': str(id)})
     
-    return render(request, 'details/detailsAmenity.html', {
-        'amenities': amenities,
-        'listing': listing,
-        'STATIC_URL':settings.STATIC_URL
-    })
+    if results and results[0][0]:
+        amenities, listings = results[0]
+        amenities = Amenity.inflate(amenities)
+        listings = [Listing.inflate(l) for l in listings] if listings else []
+
+        return render(request, 'details/detailsAmenity.html', {
+            'amenities': amenities,
+            'listing': listings,
+            'STATIC_URL': settings.STATIC_URL
+        })
+    else:
+        return render(request, 'details/detailsAmenity.html', {
+            'error': 'No amenity found with the provided ID.',
+            'STATIC_URL': settings.STATIC_URL
+        })
 
 def getUser(request, id):
-    user = User.nodes.get(user_id = id)
-    review = user.reviews.all()
-   
-    return render(request, 'details/detailsUser.html', {
-        'user': user,
-        'review': review,
-        'STATIC_URL':settings.STATIC_URL
-    })
+    query = """
+    MATCH (u:User {user_id: $id})
+    OPTIONAL MATCH (u)-[:WROTE]->(r:Review)
+    RETURN u, collect(r) as reviews
+    """
+    results, _ = db.cypher_query(query, {'id': str(id)})
+    
+    if results and results[0][0]:
+        user, reviews = results[0]
+        user = User.inflate(user)
+        reviews = [Review.inflate(r) for r in reviews] if reviews else []
+
+        return render(request, 'details/detailsUser.html', {
+            'user': user,
+            'review': reviews,
+            'STATIC_URL': settings.STATIC_URL
+        })
+    else:
+        return render(request, 'details/detailsUser.html', {
+            'error': 'No user found with the provided ID.',
+            'STATIC_URL': settings.STATIC_URL
+        })
 
 def getReview(request, id):
-    reviews = Review.nodes.get(review_id = id)
-    listing = reviews.listings.all()
-    user = reviews.user.all()
+    query = """
+    MATCH (r:Review {review_id: $id})
+    OPTIONAL MATCH (r)-[:REVIEWS]->(l:Listing)
+    OPTIONAL MATCH (r)-[:WRITTEN_BY]->(u:User)
+    RETURN r, l, u
+    """
+    results, _ = db.cypher_query(query, {'id': str(id)})
+    
+    if results and results[0][0]:
+        reviews, listing, user = results[0]
+        reviews = Review.inflate(reviews)
+        listing = Listing.inflate(listing) if listing else None
+        user = User.inflate(user) if user else None
 
-    return render(request, 'details/detailsReview.html', {
-        'user': user,
-        'review': reviews,
-        'listing': listing,
-        'STATIC_URL':settings.STATIC_URL
-    })
+        return render(request, 'details/detailsReview.html', {
+            'user': user,
+            'review': reviews,
+            'listing': listing,
+            'STATIC_URL': settings.STATIC_URL
+        })
+    else:
+        return render(request, 'details/detailsReview.html', {
+            'error': 'No review found with the provided ID.',
+            'STATIC_URL': settings.STATIC_URL
+        })
 
 def getMostRatedListing(request):
-    # Realizamos una consulta Cypher para encontrar el Listing con más Reviews
     query = """
     MATCH (review)-[r:REVIEWS]->(l:Listing)
     RETURN l, COUNT(review) as reviews_count
@@ -303,18 +388,15 @@ def getMostRatedListing(request):
     """
     results, meta = db.cypher_query(query)
 
-    # Verificamos si hay resultados
     if results:
         most_rated_listing, reviews_count = results[0][0], results[0][1]
         
-        # Convertimos el nodo Neo4j en un objeto Django Neomodel para acceder fácilmente a sus relaciones
         most_rated_listing = Listing.inflate(most_rated_listing)
-        
-        # Preparamos los detalles para renderizar la respuesta
+
         reviews = most_rated_listing.reviews.all()
         host = most_rated_listing.host.all()
         amenities = most_rated_listing.amenities.all()
-        neighborhood = most_rated_listing.neighborhood.all()[0]  # Asumiendo que cada listing está en un vecindario
+        neighborhood = most_rated_listing.neighborhood.all()[0]  
 
         return render(request, 'details/detailsListing.html', {
             'neighborhood': neighborhood,
@@ -325,5 +407,4 @@ def getMostRatedListing(request):
             'STATIC_URL':settings.STATIC_URL
         })
     else:
-        # Si no hay resultados, devolvemos un error
         return JsonResponse({'error': 'No listings with reviews found'}, status=404)
