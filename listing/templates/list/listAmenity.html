@@ -6,7 +6,7 @@
 {% block contenido %}
 	    <dl>
 		{% for row in amenity %}
-		    <h4>{{row.name}}</h4>
+        <a href="/amenity/{{row.name}}"><h4>{{row.name}}</h4></a>
 		{% endfor %}
 		</dl>
         <ul class="uk-pagination uk-flex-center" uk-margin>

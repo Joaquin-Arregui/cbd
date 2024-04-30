@@ -1,0 +1,32 @@
+    {% extends 'base.html' %}
+
+    {% block titulo %} Información de la reseña: {{ review.name }} {% endblock %}
+
+    {% block contenido %}
+    <h3>Detalles</h3>
+    <dl>
+        <h4>
+            Fecha: {{ review.date }}<br>
+            Comentario: {{ review.comments }}<br>
+        </h4>
+    </dl>
+    <hr>
+
+    <h3>Alojamientos</h3>
+    <dl>
+        {% for row in listing %}
+		    <a href="/listing/{{row.listing_id}}"><h4>{{row.name}}:</h4></a>
+            <p>Precio: {{row.price}}$, Número de habitaciones: {{row.bedrooms}}, Número de aseos: {{row.bathrooms}}</p>
+		{% endfor %}
+    </dl>
+    <hr>
+
+    <h3>Usuarios</h3>
+    <dl>
+        {% for u in user %}
+            {{ u.name }}
+        {% endfor %}
+    </dl>
+    <hr>
+
+    {% endblock %}

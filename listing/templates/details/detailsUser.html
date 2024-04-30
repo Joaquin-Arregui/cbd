@@ -1,0 +1,16 @@
+    {% extends 'base.html' %}
+
+    {% block titulo %} {{ user.name }} {% endblock %}
+
+    {% block contenido %}
+
+    <h3>Reseñas</h3>
+    <dl>
+      {% for row in review %}
+      <h4>{{ row.review_id }}:</h4>
+      <p>Fecha: {{ row.date }}, Comentario: {{ row.comments }}</p>
+        {% endfor %}
+		</dl>
+    <hr>
+
+    {% endblock %}

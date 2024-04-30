@@ -182,6 +182,58 @@ def getListing(request, id):
         'STATIC_URL':settings.STATIC_URL
     })
 
+def getHost(request, id):
+    host = Host.nodes.get(host_id = id)
+    listing = host.listings.all()
+    
+    return render(request, 'details/detailsHost.html', {
+        'host': host,
+        'listing': listing,
+        'STATIC_URL':settings.STATIC_URL
+    })
+
+def getNeighborhood(request, id):
+    neighborhood = Neighborhood.nodes.get(neighborhood_id = id)
+    listing = neighborhood.listings.all()
+    
+    return render(request, 'details/detailsNeighborhood.html', {
+        'neighborhood': neighborhood,
+        'listing': listing,
+        'STATIC_URL':settings.STATIC_URL
+    })
+
+def getAmenity(request, id):
+    amenities = Amenity.nodes.get(name = id)
+    listing = amenities.listings.all()
+    
+    return render(request, 'details/detailsAmenity.html', {
+        'amenities': amenities,
+        'listing': listing,
+        'STATIC_URL':settings.STATIC_URL
+    })
+
+def getUser(request, id):
+    user = User.nodes.get(user_id = id)
+    review = user.reviews.all()
+   
+    return render(request, 'details/detailsUser.html', {
+        'user': user,
+        'review': review,
+        'STATIC_URL':settings.STATIC_URL
+    })
+
+def getReview(request, id):
+    reviews = Review.nodes.get(review_id = id)
+    listing = reviews.listings.all()
+    user = reviews.user.all()
+
+    return render(request, 'details/detailsReview.html', {
+        'user': user,
+        'review': reviews,
+        'listing': listing,
+        'STATIC_URL':settings.STATIC_URL
+    })
+
 def getMostRatedListing(request):
     # Realizamos una consulta Cypher para encontrar el Listing con más Reviews
     query = """
