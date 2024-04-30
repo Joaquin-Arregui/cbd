@@ -419,25 +419,28 @@ def create_review(request, listing_id):
     
     if request.method == 'POST':
         review_text = request.POST.get('comment')
-        id = request.POST.get('user')
-        query = """
-        MATCH (u:User {user_id: $id})
-        RETURN u
-        """
-        results, _ = db.cypher_query(query, {'id': str(id)})
-        user = results[0][0]
-        user = User.inflate(user)
+        user_id = request.POST.get('user')
         query = """
         MATCH (r:Review)
         RETURN MAX(r.review_id)
         """
         results, _ = db.cypher_query(query, {'id': str(id)})
         review_id = int(results[0][0])+1
-        new_review = Review(comments=review_text, user=user, listings=listing, date=datetime.now().strftime('%Y-%m-%d'), review_id=review_id)
-        new_review.save()
-
-        messages.success(request, 'Review added successfully!')
-        return redirect('/review/'+ str(listing_id))
+        query = """
+        MATCH (user:User {user_id: '$user_id'})
+        MATCH (listing:Listing {listing_id: '$listing_id'})
+        CREATE (review:Review {
+        review_id: '$review_id',
+        date: '$date',
+        comments: '$comment'
+        })
+        CREATE (user)-[:WROTE]->(review)
+        CREATE (review)-[:REVIEWS]->(listing)
+        RETURN review
+        """
+        results, _ = db.cypher_query(query, {'listing_id': str(listing_id), 'user_id': user_id, 'review_id': review_id, 'date':datetime.now().strftime('%Y-%m-%d'), 'comment': review_text})
+        review = results[0][0]
+        return redirect('/review/'+ str(review.review_id))
     
     query = """
     MATCH (a:User)
