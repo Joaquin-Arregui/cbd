@@ -255,15 +255,14 @@ def getHost(request, id):
     query = """
     MATCH (h:Host)
     WHERE h.host_id = $id
-    OPTIONAL MATCH (h)-[:HAS_LISTINGS]->(l)
-    RETURN h, collect(l) as listings
+    RETURN h
     """
     results, _ = db.cypher_query(query, {'id': str(id)})
     
-    if results and results[0][0]:
-        host, listings = results[0]
+    if results:
+        host = results[0][0]
         host = Host.inflate(host)
-        listings = [Listing.inflate(l) for l in listings] if listings else []
+        listings = host.listings.all()
 
         return render(request, 'details/detailsHost.html', {
             'host': host,
@@ -281,15 +280,14 @@ def getNeighborhood(request, id):
     query = """
     MATCH (n:Neighborhood)
     WHERE n.neighborhood_id = $id
-    OPTIONAL MATCH (n)-[:HAS_LISTINGS]->(l)
-    RETURN n, collect(l) as listings
+    RETURN n
     """
     results, _ = db.cypher_query(query, {'id': str(id)})
     
-    if results and results[0][0]:
-        neighborhood, listings = results[0]
+    if results:
+        neighborhood = results[0][0]
         neighborhood = Neighborhood.inflate(neighborhood)
-        listings = [Listing.inflate(l) for l in listings] if listings else []
+        listings = neighborhood.listings.all()
 
         return render(request, 'details/detailsNeighborhood.html', {
             'neighborhood': neighborhood,
@@ -307,18 +305,17 @@ def getAmenity(request, id):
     query = """
     MATCH (a:Amenity)
     WHERE a.name = $id
-    OPTIONAL MATCH (a)-[:HAS_LISTINGS]->(l)
-    RETURN a, collect(l) as listings
+    RETURN a
     """
     results, _ = db.cypher_query(query, {'id': str(id)})
     
-    if results and results[0][0]:
-        amenities, listings = results[0]
-        amenities = Amenity.inflate(amenities)
-        listings = [Listing.inflate(l) for l in listings] if listings else []
+    if results:
+        amenity = results[0][0]
+        amenity = Amenity.inflate(amenity)
+        listings = amenity.listings.all()
 
         return render(request, 'details/detailsAmenity.html', {
-            'amenities': amenities,
+            'amenities': amenity,
             'listing': listings,
             'STATIC_URL': settings.STATIC_URL
         })
@@ -331,15 +328,14 @@ def getAmenity(request, id):
 def getUser(request, id):
     query = """
     MATCH (u:User {user_id: $id})
-    OPTIONAL MATCH (u)-[:WROTE]->(r:Review)
-    RETURN u, collect(r) as reviews
+    RETURN u
     """
     results, _ = db.cypher_query(query, {'id': str(id)})
     
-    if results and results[0][0]:
-        user, reviews = results[0]
+    if results:
+        user = results[0][0]
         user = User.inflate(user)
-        reviews = [Review.inflate(r) for r in reviews] if reviews else []
+        reviews = user.reviews.all()
 
         return render(request, 'details/detailsUser.html', {
             'user': user,
@@ -354,19 +350,17 @@ def getUser(request, id):
 
 def getReview(request, id):
     query = """
-    MATCH (r:Review {review_id: $id})
-    OPTIONAL MATCH (r)-[:REVIEWS]->(l:Listing)
-    OPTIONAL MATCH (r)-[:WRITTEN_BY]->(u:User)
-    RETURN r, l, u
+    MATCH (r:Review)
+    WHERE r.review_id = $id
+    RETURN r
     """
     results, _ = db.cypher_query(query, {'id': str(id)})
     
-    if results and results[0][0]:
-        reviews, listing, user = results[0]
+    if results:
+        reviews = results[0][0]
         reviews = Review.inflate(reviews)
-        listing = Listing.inflate(listing) if listing else None
-        user = User.inflate(user) if user else None
-
+        listing = reviews.listings.all()
+        user = reviews.user.all()
         return render(request, 'details/detailsReview.html', {
             'user': user,
             'review': reviews,
