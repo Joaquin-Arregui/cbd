@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import render
-from neomodel import Traversal, match
+from neomodel import Traversal, match, db
+
 from .models import Amenity, Neighborhood, Host, User, Review, Listing
 from django.conf import settings
 
@@ -180,3 +181,38 @@ def getListing(request, id):
         'listing': listing,
         'STATIC_URL':settings.STATIC_URL
     })
+
+def getMostRatedListing(request):
+    # Realizamos una consulta Cypher para encontrar el Listing con más Reviews
+    query = """
+    MATCH (review)-[r:REVIEWS]->(l:Listing)
+    RETURN l, COUNT(review) as reviews_count
+    ORDER BY reviews_count DESC
+    LIMIT 1
+    """
+    results, meta = db.cypher_query(query)
+
+    # Verificamos si hay resultados
+    if results:
+        most_rated_listing, reviews_count = results[0][0], results[0][1]
+        
+        # Convertimos el nodo Neo4j en un objeto Django Neomodel para acceder fácilmente a sus relaciones
+        most_rated_listing = Listing.inflate(most_rated_listing)
+        
+        # Preparamos los detalles para renderizar la respuesta
+        reviews = most_rated_listing.reviews.all()
+        host = most_rated_listing.host.all()
+        amenities = most_rated_listing.amenities.all()
+        neighborhood = most_rated_listing.neighborhood.all()[0]  # Asumiendo que cada listing está en un vecindario
+
+        return render(request, 'details/detailsListing.html', {
+            'neighborhood': neighborhood,
+            'amenities': amenities,
+            'host': host,
+            'review': reviews,
+            'listing': most_rated_listing,
+            'STATIC_URL':settings.STATIC_URL
+        })
+    else:
+        # Si no hay resultados, devolvemos un error
+        return JsonResponse({'error': 'No listings with reviews found'}, status=404)

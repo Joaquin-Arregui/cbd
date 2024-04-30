@@ -18,7 +18,7 @@
     </dl>
     <hr>
 
-    <h3>Host</h3>
+    <h3>Arrendatario</h3>
     <dl>
         {% for h in host %}
             <h4>Nombre: {{ h.name }}</h4>
@@ -29,7 +29,7 @@
     </dl>
     <hr>
 
-    <h3>Amenidades</h3>
+    <h3>Servicios</h3>
     <dl>
         {% for amenity in amenities %}
             {{ amenity.name }}, 
@@ -46,7 +46,6 @@
     <h3>Reseñas</h3>
     <dl>
         {% for row in review %}
-            <h4>{{ row.review_id }}:</h4>
             <p>Fecha: {{ row.date }}, Comentario: {{ row.comments }}</p>
         {% endfor %}
     </dl> 

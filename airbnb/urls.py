@@ -27,4 +27,5 @@ urlpatterns = [
     path('users/<int:pag>/', views.listUser, name='index'),
     path('reviews/<int:pag>/', views.listReview, name='index'),
     path('listing/<int:id>/', views.getListing, name='index'),
+    path('mostRated/', views.getMostRatedListing2, name='index'),
 ]
