@@ -21,7 +21,7 @@
     <h3>Arrendatario</h3>
     <dl>
         {% for h in host %}
-            <h4>Nombre: {{ h.name }}</h4>
+            <a href="/host/{{h.host_id}}"><h4>Nombre: {{ h.name }} </h4>{{ amenity.name }}</a>
             <p>Superhost: {{ h.superhost }}</p>
             <p>Ubicación: {{ h.location }}</p>
             <img src="{{ h.image }}" alt="Imagen del host">
@@ -39,12 +39,11 @@
 
     <h3>Vecindario</h3>
     <dl>
-
-        <dl>{{ neighborhood.name }}</dl>
+        <a href="/neighborhood/{{neighborhood.neighborhood_id}}"><h4>{{ neighborhood.name }}</h4></a>
     </dl>
     <hr>
 
-    <h3>Reseñas</h3>
+    <h3>Reseñas</h3><a href="/listing/{{listing.listing_id}}/review/">Crear reseña</a>
     <dl>
         {% for row in review %}
             <p>Fecha: {{ row.date }}, Comentario: {{ row.comments }}</p>

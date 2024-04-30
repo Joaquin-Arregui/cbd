@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Crear una reseña para el alojamiento: {{listing.name}}{% endblock %}
+
+{% block contenido %}
+<form method="post" id="reviewForm"> {% csrf_token %}
+    <label for="user">Usuario:</label>
+    <select id="user" name="user">
+        <option value="">---</option>
+        {% for a in users %}
+            <option value="{{a.user_id}}">{{a.name}}</option>
+        {% endfor %}
+    </select>
+
+    <input id="comment" type="text" name="comment" class="form-control" placeholder="Comentario" required>
+
+    <button type="submit" class="btn btn-primary">Crear</button>
+</form>
+
+{% endblock %}
