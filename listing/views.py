@@ -182,19 +182,36 @@ def listReview(request, pag):
     })
 
 def getListing(request, id):
-    listing = Listing.nodes.get(listing_id = id)
-    reviews = listing.reviews.all()
-    host = listing.host.all()
-    amenities = listing.amenities.all()
-    neighborhood = listing.neighborhood.all()[0]
-    return render(request, 'details/detailsListing.html', {
-        'neighborhood': neighborhood,
-        'amenities': amenities,
-        'host': host,
-        'review': reviews,
-        'listing': listing,
-        'STATIC_URL':settings.STATIC_URL
-    })
+    # Utilizamos una consulta Cypher para obtener todos los detalles en una sola llamada
+    query = """
+    MATCH (l:Listing)
+    WHERE l.listing_id = $id
+    RETURN l
+    """
+    results, _ = db.cypher_query(query, {'id': str(id)})
+    
+    if results:
+        listing = results[0][0]
+        listing = Listing.inflate(listing)
+        reviews = listing.reviews.all()
+        host = listing.host.all()
+        amenities = listing.amenities.all()
+        neighborhood = listing.neighborhood.all()[0]
+
+        return render(request, 'details/detailsListing.html', {
+            'neighborhood': neighborhood,
+            'amenities': amenities,
+            'host': host,
+            'review': reviews,
+            'listing': listing,
+            'STATIC_URL': settings.STATIC_URL
+        })
+    else:
+        # Manejo de caso cuando no se encuentra el Listing
+        return render(request, 'details/detailsListing.html', {
+            'error': 'No listing found with the provided ID.',
+            'STATIC_URL': settings.STATIC_URL
+        })
 
 def getHost(request, id):
     host = Host.nodes.get(host_id = id)
@@ -282,3 +299,30 @@ def getMostRatedListing(request):
     else:
         # Si no hay resultados, devolvemos un error
         return JsonResponse({'error': 'No listings with reviews found'}, status=404)
+    
+def getAllAmenities(request):
+    query = """
+    MATCH (a:Amenity)
+    RETURN (a)
+    """
+    amenity_results, _ = db.cypher_query(query)
+    amenities = [Amenity.inflate(row[0]).name for row in amenity_results]
+
+    return render(request, 'filter.html', {
+        'amenities': amenities,
+        'STATIC_URL': settings.STATIC_URL
+    })
+
+def resultFilter(request, pag):
+    query = """
+    MATCH (n:Listing)
+    RETURN n
+    """
+    listing_results, _ = db.cypher_query(query)
+    listings = [Listing.inflate(row[0]) for row in listing_results]
+
+    return render(request, 'list/listListing.html', {
+        'listing': listings,
+        'pagina': pag,
+        'STATIC_URL': settings.STATIC_URL
+    })
