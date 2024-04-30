@@ -1,9 +1,13 @@
+from datetime import datetime
 from django.http import JsonResponse
 from django.shortcuts import render
 from neomodel import Traversal, match, db
 
 from .models import Amenity, Neighborhood, Host, User, Review, Listing
 from django.conf import settings
+from django.shortcuts import render, redirect
+from .models import Review, Listing
+from django.contrib import messages
 
 
 def index(request):
@@ -402,3 +406,48 @@ def getMostRatedListing(request):
         })
     else:
         return JsonResponse({'error': 'No listings with reviews found'}, status=404)
+
+def create_review(request, listing_id):
+    query = """
+    MATCH (u:Listing {listing_id: $id})
+    RETURN u
+    """
+    results, _ = db.cypher_query(query, {'id': str(listing_id)})
+    listing = results[0][0]
+    listing = Listing.inflate(listing)
+    if not listing:
+        return JsonResponse({'error': 'Listing not found'}, status=404)
+    
+    if request.method == 'POST':
+        review_text = request.POST.get('comment')
+        id = request.POST.get('user')
+        query = """
+        MATCH (u:User {user_id: $id})
+        RETURN u
+        """
+        results, _ = db.cypher_query(query, {'id': str(id)})
+        user = results[0][0]
+        user = User.inflate(user)
+        query = """
+        MATCH (r:Review)
+        RETURN MAX(r.review_id)
+        """
+        results, _ = db.cypher_query(query, {'id': str(id)})
+        review_id = int(results[0][0])+1
+        new_review = Review(comments=review_text, user=user, listings=listing, date=datetime.now().strftime('%Y-%m-%d'), review_id=review_id)
+        new_review.save()
+
+        messages.success(request, 'Review added successfully!')
+        return redirect('/review/'+ str(listing_id))
+    
+    query = """
+    MATCH (a:User)
+    RETURN a
+    """
+    user_results, _ = db.cypher_query(query)
+    users = [User.inflate(row[0]) for row in user_results[:10]]
+    return render(request, 'create/review.html', {
+        'users': users,
+        'listing': listing,
+        'STATIC_URL':settings.STATIC_URL
+        })

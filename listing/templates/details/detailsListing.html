@@ -43,7 +43,7 @@
     </dl>
     <hr>
 
-    <h3>Reseñas</h3>
+    <h3>Reseñas</h3><a href="/listing/{{listing.listing_id}}/review/">Crear reseña</a>
     <dl>
         {% for row in review %}
             <p>Fecha: {{ row.date }}, Comentario: {{ row.comments }}</p>
