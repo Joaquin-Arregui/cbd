@@ -169,7 +169,13 @@ def listReview(request, pag):
 def getListing(request, id):
     listing = Listing.nodes.get(listing_id = id)
     reviews = listing.reviews.all()
-    return render(request, 'list/listListing.html', {
+    host = listing.host.all()
+    amenities = listing.amenities.all()
+    neighborhood = listing.neighborhood.all()[0]
+    return render(request, 'details/detailsListing.html', {
+        'neighborhood': neighborhood,
+        'amenities': amenities,
+        'host': host,
         'review': reviews,
         'listing': listing,
         'STATIC_URL':settings.STATIC_URL
