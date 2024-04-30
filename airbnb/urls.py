@@ -34,4 +34,5 @@ urlpatterns = [
     path('review/<int:id>/', views.getReview, name='index'),
     path('mostRated/', views.getMostRatedListing, name='index'),
     path('filterByAmenities/', views.getAllAmenities, name='index'),
+    path('results/', views.resultFilter, name='index'),
 ]
