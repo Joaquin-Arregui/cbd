@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from neomodel import Traversal, match, db
 
 from .models import Amenity, Neighborhood, Host, User, Review, Listing
@@ -313,16 +313,31 @@ def getAllAmenities(request):
         'STATIC_URL': settings.STATIC_URL
     })
 
-def resultFilter(request, pag):
+def resultFilter(request):
+    
+    amenities = []
+    amenity1 = request.GET.get('amenity1')
+    if amenity1 != '':
+        amenities.append(amenity1)
+    amenity2 = request.GET.get('amenity2')
+    if amenity2 != '':
+        amenities.append(amenity2)
+    amenity3 = request.GET.get('amenity3')
+    if amenity3 != '':
+        amenities.append(amenity3)
+    if amenities == []:
+        return redirect('/listings/1')
     query = """
-    MATCH (n:Listing)
-    RETURN n
+    MATCH (a:Amenity)-[:HAS]-(l:Listing)
+    WHERE a.name IN $amenities
+    RETURN DISTINCT l
     """
-    listing_results, _ = db.cypher_query(query)
+    listing_results, _ = db.cypher_query(query, {
+        'amenities': amenities
+    })
     listings = [Listing.inflate(row[0]) for row in listing_results]
-
-    return render(request, 'list/listListing.html', {
+    return render(request, 'results.html', {
         'listing': listings,
-        'pagina': pag,
+        'total': len(listings),
         'STATIC_URL': settings.STATIC_URL
     })
