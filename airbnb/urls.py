@@ -18,6 +18,7 @@ from listing import views
 from django.contrib import admin
 
 urlpatterns = [
+    path('admin/', admin.site.urls, name='index'),
     path('', views.index, name='index'),
     path('listings/<int:pag>/', views.listListing, name='index'),
     path('hosts/<int:pag>/', views.listHost, name='index'),
@@ -25,5 +26,5 @@ urlpatterns = [
     path('amenities/<int:pag>/', views.listAmenity, name='index'),
     path('users/<int:pag>/', views.listUser, name='index'),
     path('reviews/<int:pag>/', views.listReview, name='index'),
-    path('admin/', admin.site.urls, name='index'),
+    path('listing/<int:id>/', views.getListing, name='index'),
 ]
